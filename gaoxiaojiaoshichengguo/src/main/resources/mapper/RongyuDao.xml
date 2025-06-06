@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.RongyuDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.rongyu_name as rongyuName
+        ,a.rongyu_types as rongyuTypes
+        ,a.rongyu_photo as rongyuPhoto
+        ,a.jiaoshi_id as jiaoshiId
+        ,a.rongyu_yesno_types as rongyuYesnoTypes
+        ,a.rongyu_content as rongyuContent
+        ,a.rongyu_delete as rongyuDelete
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.RongyuView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,jiaoshi.jiaoshi_name as jiaoshiName
+        ,jiaoshi.jiaoshi_id_number as jiaoshiIdNumber
+        ,jiaoshi.jiaoshi_phone as jiaoshiPhone
+        ,jiaoshi.jiaoshi_photo as jiaoshiPhoto
+        ,jiaoshi.jiaoshi_types as jiaoshiTypes
+        ,jiaoshi.banji_types as banjiTypes
+        ,jiaoshi.jiaoshi_delete as jiaoshiDelete
+
+        FROM rongyu  a
+        left JOIN jiaoshi jiaoshi ON a.jiaoshi_id = jiaoshi.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.rongyuName != '' and params.rongyuName != null and params.rongyuName != 'null' ">
+                and a.rongyu_name like CONCAT('%',#{params.rongyuName},'%')
+            </if>
+            <if test=" params.rongyuTypes != '' and params.rongyuTypes != null and params.rongyuTypes != 'null' ">
+                and a.rongyu_types like CONCAT('%',#{params.rongyuTypes},'%')
+            </if>
+            <if test="params.jiaoshiId != null and params.jiaoshiId != ''">
+                and a.jiaoshi_id = #{params.jiaoshiId}
+            </if>
+            <if test="params.rongyuYesnoTypes != null and params.rongyuYesnoTypes != ''">
+                and a.rongyu_yesno_types = #{params.rongyuYesnoTypes}
+            </if>
+            <if test=" params.rongyuContent != '' and params.rongyuContent != null and params.rongyuContent != 'null' ">
+                and a.rongyu_content like CONCAT('%',#{params.rongyuContent},'%')
+            </if>
+            <if test="params.rongyuDeleteStart != null and params.rongyuDeleteStart != ''">
+                <![CDATA[  and a.rongyu_delete >= #{params.rongyuDeleteStart}   ]]>
+            </if>
+            <if test="params.rongyuDeleteEnd != null and params.rongyuDeleteEnd != ''">
+                <![CDATA[  and a.rongyu_delete <= #{params.rongyuDeleteEnd}   ]]>
+            </if>
+             <if test="params.rongyuDelete != null and params.rongyuDelete != ''">
+                and a.rongyu_delete = #{params.rongyuDelete}
+             </if>
+
+                <!-- 判断教师的id不为空 -->
+            <if test=" params.jiaoshiIdNotNull != '' and params.jiaoshiIdNotNull != null and params.jiaoshiIdNotNull != 'null' ">
+                and a.jiaoshi_id IS NOT NULL
+            </if>
+            <if test=" params.jiaoshiName != '' and params.jiaoshiName != null and params.jiaoshiName != 'null' ">
+                and jiaoshi.jiaoshi_name like CONCAT('%',#{params.jiaoshiName},'%')
+            </if>
+            <if test=" params.jiaoshiIdNumber != '' and params.jiaoshiIdNumber != null and params.jiaoshiIdNumber != 'null' ">
+                and jiaoshi.jiaoshi_id_number like CONCAT('%',#{params.jiaoshiIdNumber},'%')
+            </if>
+            <if test=" params.jiaoshiPhone != '' and params.jiaoshiPhone != null and params.jiaoshiPhone != 'null' ">
+                and jiaoshi.jiaoshi_phone like CONCAT('%',#{params.jiaoshiPhone},'%')
+            </if>
+            <if test="params.jiaoshiTypes != null  and params.jiaoshiTypes != ''">
+                and jiaoshi.jiaoshi_types = #{params.jiaoshiTypes}
+            </if>
+
+            <if test="params.banjiTypes != null  and params.banjiTypes != ''">
+                and jiaoshi.banji_types = #{params.banjiTypes}
+            </if>
+
+            <if test="params.jiaoshiDeleteStart != null  and params.jiaoshiDeleteStart != '' ">
+                <![CDATA[  and jiaoshi.jiaoshi_delete >= #{params.jiaoshiDeleteStart}   ]]>
+            </if>
+            <if test="params.jiaoshiDeleteEnd != null  and params.jiaoshiDeleteEnd != '' ">
+                <![CDATA[  and jiaoshi.jiaoshi_delete <= #{params.jiaoshiDeleteEnd}   ]]>
+            </if>
+            <if test="params.jiaoshiDelete != null  and params.jiaoshiDelete != '' ">
+                and jiaoshi.jiaoshi_delete = #{params.jiaoshiDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
